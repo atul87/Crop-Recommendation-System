@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Recommendation - CropAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fas fa-seedling"></i> CropAI
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/crop" class="active">Crop Recommendation</a>
+            <a href="/fertilizer">Fertilizer Recommendation</a>
+            <a href="/type">Crop Type Prediction</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2><i class="fas fa-wheat"></i> Crop Recommendation</h2>
+            <p>Enter the soil and climate details to get the best crop suggestion.</p>
+        </div>
+
+        <form id="prediction-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nitrogen (N)</label>
+                    <input type="number" name="N" required min="0" max="200" value="50">
+                </div>
+                <div class="form-group">
+                    <label>Phosphorus (P)</label>
+                    <input type="number" name="P" required min="0" max="200" value="50">
+                </div>
+                <div class="form-group">
+                    <label>Potassium (K)</label>
+                    <input type="number" name="K" required min="0" max="200" value="50">
+                </div>
+                <div class="form-group">
+                    <label>Temperature (°C)</label>
+                    <input type="number" name="temperature" required step="0.1" value="25.0">
+                </div>
+                <div class="form-group">
+                    <label>Humidity (%)</label>
+                    <input type="number" name="humidity" required step="0.1" min="0" max="100" value="60.0">
+                </div>
+                <div class="form-group">
+                    <label>pH Level</label>
+                    <input type="number" name="ph" required step="0.1" min="0" max="14" value="6.5">
+                </div>
+                <div class="form-group">
+                    <label>Rainfall (mm)</label>
+                    <input type="number" name="rainfall" required step="0.1" min="0" value="100.0">
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Recommend Crop</button>
+        </form>
+
+        <div id="result-container" class="result-container"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Crop Recommendation System. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+
+</html>

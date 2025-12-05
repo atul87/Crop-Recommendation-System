@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Recommendation System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fas fa-seedling"></i> CropAI
+        </a>
+        <div class="nav-links">
+            <a href="/" class="active">Home</a>
+            <a href="/crop">Crop Recommendation</a>
+            <a href="/fertilizer">Fertilizer Recommendation</a>
+            <a href="/type">Crop Type Prediction</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Smart Farming Solutions</h1>
+        <p>Leverage the power of AI to optimize your agricultural yield. Get personalized recommendations for crops and fertilizers.</p>
+        <a href="#features" class="cta-button">Get Started</a>
+    </header>
+
+    <section id="features" class="features">
+        <div class="feature-card">
+            <i class="fas fa-wheat feature-icon" style="color: #f1c40f;"></i>
+            <h3>Crop Recommendation</h3>
+            <p>Find the most suitable crop for your soil based on N, P, K, and climate conditions.</p>
+            <a href="/crop" class="feature-btn">Try Now</a>
+        </div>
+
+        <div class="feature-card">
+            <i class="fas fa-flask feature-icon" style="color: #3498db;"></i>
+            <h3>Fertilizer Recommendation</h3>
+            <p>Get expert advice on which fertilizer to use to maximize your crop's growth.</p>
+            <a href="/fertilizer" class="feature-btn">Try Now</a>
+        </div>
+
+        <div class="feature-card">
+            <i class="fas fa-leaf feature-icon" style="color: #2ecc71;"></i>
+            <h3>Crop Type Prediction</h3>
+            <p>Predict the type of crop that best fits your environmental parameters.</p>
+            <a href="/type" class="feature-btn">Try Now</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 Crop Recommendation System. All rights reserved.</p>
+    </footer>
+</body>
+</html>
