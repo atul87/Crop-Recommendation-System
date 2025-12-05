@@ -1,17 +1,19 @@
-name: crop-recommendation-env
+name: crop-recommendation
 channels:
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - python=3.10
-  - flask
-  - pandas
   - numpy
+  - pandas
   - scikit-learn
   - matplotlib
   - seaborn
+  - flask
   - joblib
   - jupyter
+  - flake8
+  - pytest
   - pip
   - pip:
-    - pytest
+    - jupyterlab
