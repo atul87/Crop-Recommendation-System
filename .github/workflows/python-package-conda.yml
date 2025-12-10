@@ -11,39 +11,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up Miniconda
-      uses: conda-incubator/setup-miniconda@v3
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        auto-update-conda: true
-        auto-activate-base: true
     
-    - name: Install dependencies from environment.yml
-      shell: bash -l {0}
+    - name: Install dependencies
       run: |
-        if [ -f environment.yml ]; then
-          conda env update --file environment.yml --name base --prune
-        else
-          echo "environment.yml not found — falling back to pip (if requirements.txt exists)"
-          if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
-          else
-            echo "No environment.yml or requirements.txt found"; exit 1
-          fi
-        fi
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn matplotlib seaborn flask flake8
     
     - name: Lint with flake8
-      shell: bash -l {0}
       run: |
-        conda install -y flake8
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv,venv,__pycache__
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv,venv,__pycache__
     
     - name: Verify Python imports
-      shell: bash -l {0}
       run: |
-        # Verify key imports work correctly
         python -c "import pandas; import numpy; import sklearn; print('All ML imports successful!')"
         python -c "import flask; print('Flask import successful!')"
