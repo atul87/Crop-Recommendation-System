@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
 
 def clean_crop_recommendations():
     """Clean Crop_recommendations.csv dataset"""

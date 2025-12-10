@@ -13,10 +13,10 @@ def run_script(script_name, description):
     print(f"{'='*60}\n")
     
     try:
-        result = subprocess.run([sys.executable, script_name], 
-                              capture_output=False, 
-                              text=True, 
-                              check=True)
+        subprocess.run([sys.executable, script_name],
+                       capture_output=False,
+                       text=True,
+                       check=True)
         print(f"\n[SUCCESS] {description} completed successfully!")
         return True
     except subprocess.CalledProcessError as e:
