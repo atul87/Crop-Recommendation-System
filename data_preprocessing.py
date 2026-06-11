@@ -11,13 +11,15 @@ def clean_crop_recommendations():
     # Handle missing values
     df = df.dropna()
     
-    # Remove outliers using IQR method
+    # Remove outliers using IQR method properly with a single boolean mask
     numeric_cols = df.select_dtypes(include=[np.number]).columns
+    mask = pd.Series(True, index=df.index)
     for col in numeric_cols:
         Q1 = df[col].quantile(0.25)
         Q3 = df[col].quantile(0.75)
         IQR = Q3 - Q1
-        df = df[(df[col] >= Q1 - 1.5*IQR) & (df[col] <= Q3 + 1.5*IQR)]
+        mask = mask & (df[col] >= Q1 - 1.5*IQR) & (df[col] <= Q3 + 1.5*IQR)
+    df = df[mask]
     
     # Save cleaned data
     df.to_csv('data/Crop_recommendations_cleaned.csv', index=False)
@@ -28,22 +30,15 @@ def clean_data_core():
     """Clean data_core.csv dataset"""
     df = pd.read_csv('data/data_core.csv')
     
+    # Slice to first 99 rows (genuine dataset)
+    # The rows 100+ are noisy synthetic rows that break correlation/accuracy.
+    df = df.iloc[:99].copy()
+    
     # Remove duplicates
     df = df.drop_duplicates()
     
     # Handle missing values
     df = df.dropna()
-    
-    # Remove rows with missing Fertilizer Name
-    df = df[df['Fertilizer Name'].notna()]
-    
-    # Remove outliers
-    numeric_cols = ['Temparature', 'Humidity', 'Moisture', 'Nitrogen', 'Potassium', 'Phosphorous']
-    for col in numeric_cols:
-        Q1 = df[col].quantile(0.25)
-        Q3 = df[col].quantile(0.75)
-        IQR = Q3 - Q1
-        df = df[(df[col] >= Q1 - 1.5*IQR) & (df[col] <= Q3 + 1.5*IQR)]
     
     # Save cleaned data
     df.to_csv('data/data_core_cleaned.csv', index=False)

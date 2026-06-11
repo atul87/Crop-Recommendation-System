@@ -2,8 +2,12 @@ from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import os
 import pickle
+import database
 
 app = Flask(__name__)
+
+# Initialize database
+database.init_db()
 
 # Load Models
 MODEL_DIR = "models"
@@ -34,6 +38,7 @@ except Exception as e:
     print(f"Error loading models: {e}")
     crop_model = None
     fertilizer_model = None
+    crop_type_model_obj = None
 
 
 @app.route("/")
@@ -56,10 +61,31 @@ def type_page():
     return render_template("type.html")
 
 
+@app.route("/history")
+def history_page():
+    return render_template("history.html")
+
+
+@app.route("/api/history")
+def get_history():
+    records = database.get_predictions_history()
+    return jsonify(records)
+
+
 @app.route("/api/predict-crop", methods=["POST"])
 def predict_crop():
+    if crop_model is None:
+        return jsonify({"success": False, "error": "Model not loaded on the server."})
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+             return jsonify({"success": False, "error": "No input data provided."})
+             
+        required_fields = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+        missing_fields = [f for f in required_fields if f not in data or data[f] is None or data[f] == ""]
+        if missing_fields:
+             return jsonify({"success": False, "error": f"Missing or empty required fields: {', '.join(missing_fields)}"})
+
         features = pd.DataFrame(
             [
                 [
@@ -78,26 +104,50 @@ def predict_crop():
         prediction = crop_model.predict(features)[0]
         probabilities = crop_model.predict_proba(features)[0]
         confidence = max(probabilities) * 100
+        confidence_str = f"{confidence:.2f}"
+
+        # Save to database
+        database.save_prediction("Crop Recommendation", data, prediction, confidence_str)
 
         return jsonify(
             {
                 "success": True,
                 "prediction": prediction,
-                "confidence": f"{confidence:.2f}",
+                "confidence": confidence_str,
             }
         )
+    except ValueError as e:
+        return jsonify({"success": False, "error": "Invalid data type. Please provide numeric values."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
 
 @app.route("/api/predict-fertilizer", methods=["POST"])
 def predict_fertilizer():
+    if fertilizer_model is None:
+        return jsonify({"success": False, "error": "Model not loaded on the server."})
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+             return jsonify({"success": False, "error": "No input data provided."})
 
-        # Encode categorical variables
-        soil_encoded = fertilizer_soil_encoder.transform([data["soil_type"]])[0]
-        crop_encoded = fertilizer_crop_encoder.transform([data["crop_type"]])[0]
+        required_fields = ["temperature", "humidity", "moisture", "soil_type", "crop_type", "nitrogen", "potassium", "phosphorous"]
+        missing_fields = [f for f in required_fields if f not in data or data[f] is None or data[f] == ""]
+        if missing_fields:
+             return jsonify({"success": False, "error": f"Missing or empty required fields: {', '.join(missing_fields)}"})
+
+        # Encode categorical variables with error handling
+        try:
+            soil_type = data["soil_type"]
+            soil_encoded = fertilizer_soil_encoder.transform([soil_type])[0]
+        except ValueError:
+            return jsonify({"success": False, "error": f"Unknown soil type: {soil_type}"})
+            
+        try:
+            crop_type = data["crop_type"]
+            crop_encoded = fertilizer_crop_encoder.transform([crop_type])[0]
+        except ValueError:
+            return jsonify({"success": False, "error": f"Unknown crop type: {crop_type}"})
 
         input_data = pd.DataFrame(
             [
@@ -128,25 +178,44 @@ def predict_fertilizer():
         prediction = fertilizer_model.predict(input_scaled)[0]
         probabilities = fertilizer_model.predict_proba(input_scaled)[0]
         confidence = max(probabilities) * 100
+        confidence_str = f"{confidence:.2f}"
+
+        # Save to database
+        database.save_prediction("Fertilizer Recommendation", data, prediction, confidence_str)
 
         return jsonify(
             {
                 "success": True,
                 "prediction": prediction,
-                "confidence": f"{confidence:.2f}",
+                "confidence": confidence_str,
             }
         )
+    except ValueError as e:
+        return jsonify({"success": False, "error": "Invalid data type. Please provide numeric values."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
 
 @app.route("/api/predict-type", methods=["POST"])
 def predict_type():
+    if crop_type_model_obj is None:
+        return jsonify({"success": False, "error": "Model not loaded on the server."})
     try:
-        data = request.json
+        data = request.get_json(silent=True)
+        if not data:
+             return jsonify({"success": False, "error": "No input data provided."})
 
-        # Encode categorical variables
-        soil_encoded = crop_type_soil_encoder.transform([data["soil_type"]])[0]
+        required_fields = ["temperature", "humidity", "moisture", "soil_type", "nitrogen", "potassium", "phosphorous"]
+        missing_fields = [f for f in required_fields if f not in data or data[f] is None or data[f] == ""]
+        if missing_fields:
+             return jsonify({"success": False, "error": f"Missing or empty required fields: {', '.join(missing_fields)}"})
+
+        # Encode categorical variables with error handling
+        try:
+            soil_type = data["soil_type"]
+            soil_encoded = crop_type_soil_encoder.transform([soil_type])[0]
+        except ValueError:
+            return jsonify({"success": False, "error": f"Unknown soil type: {soil_type}"})
 
         input_data = pd.DataFrame(
             [
@@ -175,14 +244,20 @@ def predict_type():
         prediction = crop_type_model_obj.predict(input_scaled)[0]
         probabilities = crop_type_model_obj.predict_proba(input_scaled)[0]
         confidence = max(probabilities) * 100
+        confidence_str = f"{confidence:.2f}"
+
+        # Save to database
+        database.save_prediction("Crop Type Prediction", data, prediction, confidence_str)
 
         return jsonify(
             {
                 "success": True,
                 "prediction": prediction,
-                "confidence": f"{confidence:.2f}",
+                "confidence": confidence_str,
             }
         )
+    except ValueError as e:
+        return jsonify({"success": False, "error": "Invalid data type. Please provide numeric values."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 

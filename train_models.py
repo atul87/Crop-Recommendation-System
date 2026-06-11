@@ -1,6 +1,6 @@
 import pandas as pd
 import pickle
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
@@ -21,16 +21,30 @@ def train_crop_recommendation_model():
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    # Train model
-    model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
-    model.fit(X_train, y_train)
+    # Grid Search for basic tuning
+    param_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20]
+    }
+    rf = RandomForestClassifier(random_state=42, n_jobs=-1)
+    
+    print("Running GridSearchCV...")
+    grid_search = GridSearchCV(rf, param_grid, cv=3, n_jobs=-1, verbose=1)
+    grid_search.fit(X_train, y_train)
+    
+    model = grid_search.best_estimator_
+    print(f"Best Parameters: {grid_search.best_params_}")
+    
+    # Cross Validation
+    cv_scores = cross_val_score(model, X_train, y_train, cv=5)
+    print(f"Mean CV Accuracy: {cv_scores.mean()*100:.2f}% (+/- {cv_scores.std()*100:.2f}%)")
     
     # Predictions
     y_pred = model.predict(X_test)
     
     # Evaluation
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nAccuracy: {accuracy*100:.2f}%")
+    print(f"\nTest Accuracy: {accuracy*100:.2f}%")
     print(f"\nClassification Report:\n{classification_report(y_test, y_pred)}")
     
     # Feature importance
@@ -85,16 +99,30 @@ def train_fertilizer_recommendation_model():
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     
-    # Train model
-    model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
-    model.fit(X_train_scaled, y_train)
+    # Grid Search for basic tuning
+    param_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20]
+    }
+    rf = RandomForestClassifier(random_state=42, n_jobs=-1)
+    
+    print("Running GridSearchCV...")
+    grid_search = GridSearchCV(rf, param_grid, cv=3, n_jobs=-1, verbose=1)
+    grid_search.fit(X_train_scaled, y_train)
+    
+    model = grid_search.best_estimator_
+    print(f"Best Parameters: {grid_search.best_params_}")
+    
+    # Cross Validation
+    cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=5)
+    print(f"Mean CV Accuracy: {cv_scores.mean()*100:.2f}% (+/- {cv_scores.std()*100:.2f}%)")
     
     # Predictions
     y_pred = model.predict(X_test_scaled)
     
     # Evaluation
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nAccuracy: {accuracy*100:.2f}%")
+    print(f"\nTest Accuracy: {accuracy*100:.2f}%")
     print(f"\nClassification Report:\n{classification_report(y_test, y_pred)}")
     
     # Feature importance
@@ -151,16 +179,30 @@ def train_crop_prediction_model():
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     
-    # Train model
-    model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
-    model.fit(X_train_scaled, y_train)
+    # Grid Search for basic tuning
+    param_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20]
+    }
+    rf = RandomForestClassifier(random_state=42, n_jobs=-1)
+    
+    print("Running GridSearchCV...")
+    grid_search = GridSearchCV(rf, param_grid, cv=3, n_jobs=-1, verbose=1)
+    grid_search.fit(X_train_scaled, y_train)
+    
+    model = grid_search.best_estimator_
+    print(f"Best Parameters: {grid_search.best_params_}")
+    
+    # Cross Validation
+    cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=5)
+    print(f"Mean CV Accuracy: {cv_scores.mean()*100:.2f}% (+/- {cv_scores.std()*100:.2f}%)")
     
     # Predictions
     y_pred = model.predict(X_test_scaled)
     
     # Evaluation
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"\nAccuracy: {accuracy*100:.2f}%")
+    print(f"\nTest Accuracy: {accuracy*100:.2f}%")
     print(f"\nClassification Report:\n{classification_report(y_test, y_pred)}")
     
     # Feature importance
@@ -203,8 +245,8 @@ if __name__ == "__main__":
     print("\n" + "="*60)
     print("TRAINING SUMMARY")
     print("="*60)
-    print(f"Crop Recommendation Model Accuracy: {acc1*100:.2f}%")
-    print(f"Fertilizer Recommendation Model Accuracy: {acc2*100:.2f}%")
-    print(f"Crop Type Prediction Model Accuracy: {acc3*100:.2f}%")
+    print(f"Crop Recommendation Model Test Accuracy: {acc1*100:.2f}%")
+    print(f"Fertilizer Recommendation Model Test Accuracy: {acc2*100:.2f}%")
+    print(f"Crop Type Prediction Model Test Accuracy: {acc3*100:.2f}%")
     print("="*60)
     print("\nAll models trained and saved successfully!")
